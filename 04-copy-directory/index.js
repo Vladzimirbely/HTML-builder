@@ -1,32 +1,21 @@
 const fs = require('fs');
 
-fs.mkdir(__dirname + '/files-copy', { recursive: true }, (err) => {
-    if (err) {
-        console.error(err);
-        return;
+async function copyDirectory() {
+    try {
+        await fs.promises.rm(__dirname + '/files-copy', { recursive: true });
+    } catch (err) {
     }
-})
+    
+    await fs.promises.mkdir(__dirname + '/files-copy', { recursive: true });
 
-fs.readdir(__dirname + '/files', (err, files) => {
-    if (err) {
-        console.log(err);
-        return;
-    }
-
-    files.forEach((items) => {
-      fs.readFile(`${__dirname}/files/${items}`, (err, data) => {
-        if (err) {
-            console.log(err);
-            return;
+    const dir = await fs.promises.readdir(__dirname + '/files', { withFileTypes: true });
+    
+    for (let i of dir) {
+        if (i.isFile()) {
+            await fs.promises.copyFile(`${__dirname}/files/${i.name}`, `${__dirname}/files-copy/${i.name}`);
         }
+    }
 
-        fs.writeFile(`${__dirname}/files-copy/${items}`, data, (err) => {
-            if (err) {
-                console.log(err);
-                return;
-            }
-        })
+}
 
-      })
-    })
-})
+copyDirectory();
